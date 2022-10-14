@@ -1,6 +1,5 @@
 const express = require('express');
 const path = require('path');
-const savedNotes = require('./db/db.json');
 const PORT = process.env.PORT || 3001;
 const app = express();
 const { v4: uuid } = require('uuid');
@@ -23,7 +22,12 @@ app.get('/notes', (req, res) => {
   });
 
   
-app.get('/api/notes', (req, res) => res.json(savedNotes));
+app.get('/api/notes', (req, res) => {
+  fs.readFile(`./db/db.json`, "utf8", (err,data) => {
+  const parsedNotes = JSON.parse(data);
+  res.json(parsedNotes);
+})
+});
  
 
 
