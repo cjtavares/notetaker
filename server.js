@@ -4,6 +4,7 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 const { v4: uuid } = require('uuid');
 const fs = require('fs');
+const { nextTick } = require('process');
 
 // const { handleNoteSave} = require('./public/assets/js/index');
 
@@ -47,8 +48,6 @@ app.post('/api/notes', (req, res) => {
         id: uuid(),
       };
   
-      // Convert the data to a string so we can save it
-      // const reviewString = JSON.stringify(newNotes);
   
       // Write the string to a file
       fs.readFile(`./db/db.json`, "utf8", (err,data) => {
@@ -60,7 +59,7 @@ app.post('/api/notes', (req, res) => {
         err
           ? console.error(err)
           : console.log(
-              `Review for ${newNotes.title} has been written to JSON file`
+              `Note for ${newNotes.title} has been written to JSON file`
             )
       );
       }
@@ -75,10 +74,34 @@ app.post('/api/notes', (req, res) => {
       console.log(response);
       res.status(201).json(response);
     } else {
-      res.status(500).json('Error in posting review');
+      res.status(500).json('Error in posting note');
     }
   });
+
+  app.delete('/api/notes/:id', (req,res,next) => {
+  fs.readFile(`./db/db.json`, "utf8", (err,data) => {
+    let parsedNotes1 = JSON.parse(data);
+    for(let i = 0; i < parsedNotes1.length; i++ ){
+      if(req.params.id === parsedNotes1[i].id){
+        parsedNotes1.splice(i, 1);
+        }
+      }
+      const stringifiedNotes1 = JSON.stringify(parsedNotes1, null, 4);
+      fs.writeFile(`./db/db.json`, stringifiedNotes1, (err) =>
+        err
+          ? console.error(err)
+          : console.log(
+              `Note  has been deleted from JSON file`
+            )
+      );
+      next();
+    });
+    
+})
 
   app.listen(PORT, () => {
     console.log(`Example app listening at http://localhost:${PORT}`);
   });
+
+
+   
